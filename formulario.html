@@ -850,18 +850,29 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             const nroMaquina = obtenerParametroURL('nro');
-            const tipoMaquina = obtenerParametroURL('tipo') || 'Café';
+            let tipoMaquina = obtenerParametroURL('tipo');
+
+            if (!tipoMaquina) {
+                tipoMaquina = 'Café';
+            }
             
             if (nroMaquina) {
                 document.getElementById('nroMaquina').value = nroMaquina;
                 document.getElementById('tipoMaquina').value = tipoMaquina;
                 
-                const maquina = maquinas.find(m => m.nro === nroMaquina && m.tipo === tipoMaquina);
+                const maquina = maquinas.find(
+                    String(m.nro).trim() === String(nroMaquina).trim() &&
+                    m.tipo.toLowerCase() === tipoMaquina.toLowerCase()
+                );
                 
                 if (maquina) {
                     document.getElementById('cliente').value = maquina.cliente;
                     document.getElementById('sector').value = maquina.sector;
                     document.getElementById('modelo').value = maquina.modelo;
+                } else {
+                    document.getElementById('cliente').value = 'No identificado';
+                    document.getElementById('sector').value = 'No identificado';
+                    document.getElementById('modelo').value = 'No identificado';
                 }
             }
 
