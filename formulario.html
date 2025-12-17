@@ -834,6 +834,7 @@ async function cargarMaquinas() {
         if (data.success) {
             maquinas = data.maquinas;
             console.log('✅ Máquinas cargadas:', maquinas.length);
+            console.log('📋 Datos de máquinas:', maquinas);
             return true;
         } else {
             console.error('❌ Error al cargar máquinas:', data.message);
@@ -852,8 +853,13 @@ function obtenerParametroURL(nombre) {
 
 // INICIALIZAR AL CARGAR LA PÁGINA
 window.addEventListener('DOMContentLoaded', async () => {
-    // 1. PRIMERO cargar las máquinas
-    await cargarMaquinas();
+    // 1. PRIMERO cargar las máquinas y ESPERAR a que termine
+    const cargaExitosa = await cargarMaquinas();
+    
+    if (!cargaExitosa) {
+        console.error('⚠️ No se pudieron cargar las máquinas');
+        return;
+    }
     
     // 2. LUEGO obtener los parámetros de la URL
     const nroMaquina = obtenerParametroURL('nro');
@@ -867,20 +873,33 @@ window.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('tipoMaquina').value = tipoMaquina;
         
         // Buscar la máquina en el array cargado
-        const maquina = maquinas.find(m => 
-            m.nro.toString().trim() === nroMaquina.toString().trim() && 
-            m.tipo.toString().trim() === tipoMaquina.toString().trim()
-        );
+        // IMPORTANTE: Normalizar los valores para la comparación
+        const maquina = maquinas.find(m => {
+            const nroMatch = m.nro.toString().trim().toLowerCase() === nroMaquina.toString().trim().toLowerCase();
+            const tipoMatch = m.tipo.toString().trim().toLowerCase() === tipoMaquina.toString().trim().toLowerCase();
+            
+            console.log(`Comparando: ${m.nro} (${m.tipo}) con ${nroMaquina} (${tipoMaquina}) - Nro: ${nroMatch}, Tipo: ${tipoMatch}`);
+            
+            return nroMatch && tipoMatch;
+        });
         
         if (maquina) {
             console.log('✅ Máquina encontrada:', maquina);
             document.getElementById('cliente').value = maquina.cliente || '';
             document.getElementById('sector').value = maquina.sector || '';
             document.getElementById('modelo').value = maquina.modelo || '';
+            
+            console.log('📝 Campos rellenados:', {
+                cliente: maquina.cliente,
+                sector: maquina.sector,
+                modelo: maquina.modelo
+            });
         } else {
             console.warn('⚠️ No se encontró la máquina con nro:', nroMaquina, 'tipo:', tipoMaquina);
-            console.log('📋 Máquinas disponibles:', maquinas);
+            console.log('📋 Máquinas disponibles:', maquinas.map(m => `${m.nro} (${m.tipo})`));
         }
+    } else {
+        console.log('ℹ️ No se proporcionó número de máquina en la URL');
     }
 
     // 4. Inicializar el selector personalizado de país
