@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -822,193 +821,211 @@
     </div>
 
     <script>
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzutA4i97HtS8uP__ADI-aZlQWDfUBkv9omSVzyxZWXaL84RHXrkztVvTjR6bg0D3DZng/exec';
-        const WHATSAPP_NUMBER = '3515631347';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzutA4i97HtS8uP__ADI-aZlQWDfUBkv9omSVzyxZWXaL84RHXrkztVvTjR6bg0D3DZng/exec';
+const WHATSAPP_NUMBER = '3515631347';
 
-        const formulario = document.getElementById('formulario');
-        const mensaje = document.getElementById('mensaje');
-        const loading = document.getElementById('loading');
-        const btnEnviar = document.getElementById('btnEnviar');
-        const pagadoSelect = document.getElementById('pagado');
-        const tipoPagoGroup = document.getElementById('tipoPagoGroup');
-        const tipoPagoSelect = document.getElementById('tipoPago');
+let maquinas = [];
 
-        const maquinas = [
-            { nro: '1234', cliente: 'Aeropuerto', sector: 'Arribos', modelo: 'H400', tipo: 'Café', sistPago: '', obs: '' },
-            { nro: '1234', cliente: 'Aeropuerto', sector: 'Arribos', modelo: 'H400', tipo: 'Snacks', sistPago: '', obs: '' },
-            { nro: '1234', cliente: 'Aeropuerto', sector: 'Arribos', modelo: 'H400', tipo: 'Gaseosas', sistPago: '', obs: '' },
-            { nro: '9874', cliente: 'Gestam', sector: 'Personal', modelo: 'H4500', tipo: 'Café', sistPago: '', obs: '' },
-            { nro: '9874', cliente: 'Gestam', sector: 'Personal', modelo: 'H4500', tipo: 'Snacks', sistPago: '', obs: '' },
-            { nro: '9874', cliente: 'Gestam', sector: 'Personal', modelo: 'H4500', tipo: 'Gaseosas', sistPago: '', obs: '' }
-            
-        ];
-
-        function obtenerParametroURL(nombre) {
-            const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get(nombre);
+async function cargarMaquinas() {
+    try {
+        const response = await fetch(`${SCRIPT_URL}?accion=obtenerMaquinas`);
+        const data = await response.json();
+        
+        if (data.success) {
+            maquinas = data.maquinas;
+            console.log('✅ Máquinas cargadas:', maquinas.length);
+            return true;
+        } else {
+            console.error('❌ Error al cargar máquinas:', data.message);
+            return false;
         }
+    } catch (error) {
+        console.error('❌ Error al obtener máquinas:', error);
+        return false;
+    }
+}
 
-        window.addEventListener('DOMContentLoaded', () => {
-            const nroMaquina = obtenerParametroURL('nro');
-            let tipoMaquina = obtenerParametroURL('tipo');
+function obtenerParametroURL(nombre) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(nombre);
+}
 
-            if (!tipoMaquina) {
-                tipoMaquina = 'Café';
-            }
-            
-            if (nroMaquina) {
-                document.getElementById('nroMaquina').value = nroMaquina;
-                document.getElementById('tipoMaquina').value = tipoMaquina;
-                
-                const maquina = maquinas.find(
-                    String(m.nro).trim() === String(nroMaquina).trim() &&
-                    m.tipo.toLowerCase() === tipoMaquina.toLowerCase()
-                );
-                
-                if (maquina) {
-                    document.getElementById('cliente').value = maquina.cliente;
-                    document.getElementById('sector').value = maquina.sector;
-                    document.getElementById('modelo').value = maquina.modelo;
-                } else {
-                    document.getElementById('cliente').value = 'No identificado';
-                    document.getElementById('sector').value = 'No identificado';
-                    document.getElementById('modelo').value = 'No identificado';
-                }
-            }
+// INICIALIZAR AL CARGAR LA PÁGINA
+window.addEventListener('DOMContentLoaded', async () => {
+    // 1. PRIMERO cargar las máquinas
+    await cargarMaquinas();
+    
+    // 2. LUEGO obtener los parámetros de la URL
+    const nroMaquina = obtenerParametroURL('nro');
+    const tipoMaquina = obtenerParametroURL('tipo') || 'Café';
+    
+    console.log('🔍 Buscando máquina - Nro:', nroMaquina, '| Tipo:', tipoMaquina);
+    
+    // 3. Si hay número de máquina, buscarla y rellenar los campos
+    if (nroMaquina) {
+        document.getElementById('nroMaquina').value = nroMaquina;
+        document.getElementById('tipoMaquina').value = tipoMaquina;
+        
+        // Buscar la máquina en el array cargado
+        const maquina = maquinas.find(m => 
+            m.nro.toString().trim() === nroMaquina.toString().trim() && 
+            m.tipo.toString().trim() === tipoMaquina.toString().trim()
+        );
+        
+        if (maquina) {
+            console.log('✅ Máquina encontrada:', maquina);
+            document.getElementById('cliente').value = maquina.cliente || '';
+            document.getElementById('sector').value = maquina.sector || '';
+            document.getElementById('modelo').value = maquina.modelo || '';
+        } else {
+            console.warn('⚠️ No se encontró la máquina con nro:', nroMaquina, 'tipo:', tipoMaquina);
+            console.log('📋 Máquinas disponibles:', maquinas);
+        }
+    }
 
-            initCustomSelect();
+    // 4. Inicializar el selector personalizado de país
+    initCustomSelect();
+    
+    // 5. Agregar evento para mostrar/ocultar tipo de pago
+    const pagadoSelect = document.getElementById('pagado');
+    const tipoPagoGroup = document.getElementById('tipoPagoGroup');
+    const tipoPagoSelect = document.getElementById('tipoPago');
+    
+    pagadoSelect.addEventListener('change', function() {
+        if (this.value === 'Sí') {
+            tipoPagoGroup.classList.add('visible');
+            tipoPagoSelect.setAttribute('required', 'required');
+        } else {
+            tipoPagoGroup.classList.remove('visible');
+            tipoPagoSelect.removeAttribute('required');
+            tipoPagoSelect.value = '';
+        }
+    });
+});
+
+function initCustomSelect() {
+    const selectSelected = document.querySelector('.select-selected');
+    const selectItems = document.querySelector('.select-items');
+    const selectOptions = selectItems.querySelectorAll('div');
+    const hiddenSelect = document.getElementById('codigoPais');
+
+    selectSelected.addEventListener('click', function(e) {
+        e.stopPropagation();
+        selectItems.classList.toggle('select-hide');
+        this.classList.toggle('select-arrow-active');
+    });
+
+    selectOptions.forEach(function(option) {
+        option.addEventListener('click', function() {
+            const value = this.getAttribute('data-value');
+            const country = this.getAttribute('data-country');
+            const flagSrc = this.querySelector('img').src;
+            const text = this.querySelector('span').textContent;
+
+            selectSelected.innerHTML = `
+                <img src="${flagSrc}" class="flag-icon" alt="${country}">
+                <span>${text}</span>
+            `;
+
+            hiddenSelect.value = value;
+            selectOptions.forEach(opt => opt.classList.remove('same-as-selected'));
+            this.classList.add('same-as-selected');
+            selectItems.classList.add('select-hide');
+            selectSelected.classList.remove('select-arrow-active');
+        });
+    });
+
+    document.addEventListener('click', function() {
+        selectItems.classList.add('select-hide');
+        selectSelected.classList.remove('select-arrow-active');
+    });
+
+    selectOptions[0].classList.add('same-as-selected');
+}
+
+// ENVÍO DEL FORMULARIO
+const formulario = document.getElementById('formulario');
+const loading = document.getElementById('loading');
+const mensaje = document.getElementById('mensaje');
+const btnEnviar = document.getElementById('btnEnviar');
+
+formulario.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const codigoPais = document.getElementById('codigoPais').value;
+    const numeroCelular = document.getElementById('celular').value.trim();
+    const celularCompleto = numeroCelular ? `${codigoPais}${numeroCelular}` : '';
+
+    const datos = {
+        nroMaquina: document.getElementById('nroMaquina').value,
+        tipoMaquina: document.getElementById('tipoMaquina').value,
+        cliente: document.getElementById('cliente').value,
+        sector: document.getElementById('sector').value,
+        modelo: document.getElementById('modelo').value,
+        nombre: document.getElementById('nombre').value.trim(),
+        pagado: document.getElementById('pagado').value,
+        tipoPago: document.getElementById('tipoPago').value || '-',
+        celular: celularCompleto,
+        comentarios: document.getElementById('comentarios').value.trim()
+    };
+
+    console.log('📤 Enviando datos:', datos);
+
+    formulario.style.display = 'none';
+    loading.style.display = 'block';
+    btnEnviar.disabled = true;
+
+    try {
+        const response = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(datos)
         });
 
-        function initCustomSelect() {
-            const selectSelected = document.querySelector('.select-selected');
-            const selectItems = document.querySelector('.select-items');
-            const selectOptions = selectItems.querySelectorAll('div');
-            const hiddenSelect = document.getElementById('codigoPais');
+        console.log('✅ Respuesta enviada');
 
-            selectSelected.addEventListener('click', function(e) {
-                e.stopPropagation();
-                selectItems.classList.toggle('select-hide');
-                this.classList.toggle('select-arrow-active');
-            });
+        const mensajeWhatsApp = 
+            '🚨 *NUEVA ATENCIÓN REGISTRADA*' + '%0A%0A' +
+            '--- DATOS DE LA MÁQUINA ---' + '%0A' +
+            '🔢 *Nro:* ' + datos.nroMaquina + '%0A' +
+            '🏢 *Cliente:* ' + datos.cliente + '%0A' +
+            '📍 *Sector:* ' + datos.sector + '%0A' +
+            '☕ *Tipo:* ' + datos.tipoMaquina + '%0A' +
+            '⚙️ *Modelo:* ' + datos.modelo + '%0A%0A' +
+            '--- DATOS DEL CLIENTE ---' + '%0A' +
+            '👤 *Nombre:* ' + datos.nombre + '%0A' +
+            '✅ *Pago realizado:* ' + datos.pagado + '%0A' +
+            '💳 *Tipo de Pago:* ' + datos.tipoPago + '%0A' +
+            (datos.celular ? '📱 *Celular:* ' + datos.celular + '%0A' : '') +
+            '%0A--- COMENTARIOS ---' + '%0A' +
+            (datos.comentarios || 'Sin comentarios adicionales');
 
-            selectOptions.forEach(function(option) {
-                option.addEventListener('click', function() {
-                    const value = this.getAttribute('data-value');
-                    const country = this.getAttribute('data-country');
-                    const flagSrc = this.querySelector('img').src;
-                    const text = this.querySelector('span').textContent;
+        const urlWhatsApp = `https://wa.me/${WHATSAPP_NUMBER}?text=${mensajeWhatsApp}`;
 
-                    selectSelected.innerHTML = `
-                        <img src="${flagSrc}" class="flag-icon" alt="${country}">
-                        <span>${text}</span>
-                    `;
+        mostrarMensaje('exito', '✅ ¡Gracias! Redirigiendo a WhatsApp...');
 
-                    hiddenSelect.value = value;
-                    selectOptions.forEach(opt => opt.classList.remove('same-as-selected'));
-                    this.classList.add('same-as-selected');
-                    selectItems.classList.add('select-hide');
-                    selectSelected.classList.remove('select-arrow-active');
-                });
-            });
+        setTimeout(() => {
+            window.location.href = urlWhatsApp;
+        }, 1500);
 
-            document.addEventListener('click', function() {
-                selectItems.classList.add('select-hide');
-                selectSelected.classList.remove('select-arrow-active');
-            });
+    } catch (error) {
+        console.error('❌ Error:', error);
+        mostrarMensaje('error', '❌ Ocurrió un error al enviar el formulario. Por favor, intenta nuevamente.');
+        loading.style.display = 'none';
+        formulario.style.display = 'block';
+        btnEnviar.disabled = false;
+    }
+});
 
-            selectOptions[0].classList.add('same-as-selected');
-        }
-
-            pagadoSelect.addEventListener('change', function() {
-                        if (this.value === 'Sí') {
-                            tipoPagoGroup.classList.add('visible');
-                            tipoPagoSelect.setAttribute('required', 'required');
-                        } else {
-                            tipoPagoGroup.classList.remove('visible');
-                            tipoPagoSelect.removeAttribute('required');
-                            tipoPagoSelect.value = '-';
-                        }
-                    });
-
-        formulario.addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const codigoPais = document.getElementById('codigoPais').value;
-            const numeroCelular = document.getElementById('celular').value.trim();
-            const celularCompleto = numeroCelular ? `${codigoPais}${numeroCelular}` : '';
-
-            const datos = {
-                nroMaquina: document.getElementById('nroMaquina').value,
-                tipoMaquina: document.getElementById('tipoMaquina').value,
-                cliente: document.getElementById('cliente').value,
-                sector: document.getElementById('sector').value,
-                modelo: document.getElementById('modelo').value,
-                nombre: document.getElementById('nombre').value.trim(),
-                pagado: document.getElementById('pagado').value,
-                tipoPago: document.getElementById('tipoPago').value,
-                celular: celularCompleto,
-                comentarios: document.getElementById('comentarios').value.trim()
-            };
-
-            console.log('Enviando datos:', datos);
-
-            formulario.style.display = 'none';
-            loading.style.display = 'block';
-            btnEnviar.disabled = true;
-
-            try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(datos)
-                });
-
-                console.log('Respuesta enviada');
-
-                const mensajeWhatsApp = 
-                    '🚨 NUEVA ATENCIÓN REGISTRADA' + '%0A%0A' +
-                    '--- DATOS DE LA MÁQUINA ---' + '%0A' +
-                    '🔢 *Nro:* ' + datos.nroMaquina + '%0A' +
-                    '🏢 *Cliente:* ' + datos.cliente + '%0A' +
-                    '📍 *Sector:* ' + datos.sector + '%0A' +
-                    '☕ *Tipo:* ' + datos.tipoMaquina + '%0A' +
-                    '⚙️ *Modelo:* ' + datos.modelo + '%0A' +
-                    '💳 *Sist.Pago:* ' + (datos.sistPago || '') + '%0A' +
-                    '📝 *Obs:* ' + (datos.obs || '') + '%0A' +
-                    '%0A--- DATOS DEL CLIENTE ---' + '%0A' +
-                    '👤 *Nombre:* ' + datos.nombre + '%0A' +
-                    '💳 *Sistema de Pago:* ' + datos.tipoPago + '%0A' +
-                    '✅ *Pago realizado:* ' + datos.pagado + '%0A' +
-                    (datos.celular ? '📱 *Celular:* ' + datos.celular + '%0A' : '') +
-                    '%0A--- COMENTARIOS ---' + '%0A' +
-                    (datos.comentarios || 'Sin comentarios adicionales');
-
-                const urlWhatsApp = `https://wa.me/${WHATSAPP_NUMBER}?text=${mensajeWhatsApp}`;
-
-                mostrarMensaje('exito', '✅ ¡Gracias! Redirigiendo a WhatsApp...');
-
-                setTimeout(() => {
-                    window.location.href = urlWhatsApp;
-                }, 1500);
-
-            } catch (error) {
-                console.error('Error:', error);
-                mostrarMensaje('error', '❌ Ocurrió un error al enviar el formulario. Por favor, intenta nuevamente.');
-                loading.style.display = 'none';
-                formulario.style.display = 'block';
-                btnEnviar.disabled = false;
-            }
-        });
-
-        function mostrarMensaje(tipo, texto) {
-            mensaje.className = `mensaje ${tipo}`;
-            mensaje.textContent = texto;
-            mensaje.style.display = 'block';
-            mensaje.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
-    </script>
+function mostrarMensaje(tipo, texto) {
+    mensaje.className = `mensaje ${tipo}`;
+    mensaje.textContent = texto;
+    mensaje.style.display = 'block';
+    mensaje.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+</script>
 </body>
 </html>
