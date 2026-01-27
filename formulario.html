@@ -698,6 +698,8 @@
                     <input type="hidden" id="cliente" name="cliente" value="">
                     <input type="hidden" id="sector" name="sector" value="">
                     <input type="hidden" id="modelo" name="modelo" value="">
+                    <input type="hidden" id="sistPago" name="sistPago" value="">
+                    <input type="hidden" id="obs" name="obs" value="">
                 </div>
 
                 <div class="form-group">
@@ -864,13 +866,22 @@ window.addEventListener('DOMContentLoaded', async () => {
     // 2. LUEGO obtener los parámetros de la URL
     const nroMaquina = obtenerParametroURL('nro');
     const tipoMaquina = obtenerParametroURL('tipo') || 'Café';
+    const sistPago = obtenerParametroURL('sistpago') || '';
+    const obs = obtenerParametroURL('obs') || '';
     
-    console.log('🔍 Buscando máquina - Nro:', nroMaquina, '| Tipo:', tipoMaquina);
+    console.log('🔍 Parámetros URL capturados:', {
+        nro: nroMaquina,
+        tipo: tipoMaquina,
+        sistpago: sistPago,
+        obs: obs
+    });
     
     // 3. Si hay número de máquina, buscarla y rellenar los campos
     if (nroMaquina) {
         document.getElementById('nroMaquina').value = nroMaquina;
         document.getElementById('tipoMaquina').value = tipoMaquina;
+        document.getElementById('sistPago').value = sistPago;
+        document.getElementById('obs').value = obs;
         
         // Buscar la máquina en el array cargado
         // IMPORTANTE: Normalizar los valores para la comparación
@@ -892,7 +903,9 @@ window.addEventListener('DOMContentLoaded', async () => {
             console.log('📝 Campos rellenados:', {
                 cliente: maquina.cliente,
                 sector: maquina.sector,
-                modelo: maquina.modelo
+                modelo: maquina.modelo,
+                sistPago: sistPago,
+                obs: obs
             });
         } else {
             console.warn('⚠️ No se encontró la máquina con nro:', nroMaquina, 'tipo:', tipoMaquina);
@@ -981,6 +994,8 @@ formulario.addEventListener('submit', async (e) => {
         cliente: document.getElementById('cliente').value,
         sector: document.getElementById('sector').value,
         modelo: document.getElementById('modelo').value,
+        sistPago: document.getElementById('sistPago').value,
+        obs: document.getElementById('obs').value,
         nombre: document.getElementById('nombre').value.trim(),
         pagado: document.getElementById('pagado').value,
         tipoPago: document.getElementById('tipoPago').value || '-',
@@ -1013,7 +1028,9 @@ formulario.addEventListener('submit', async (e) => {
             '🏢 *Cliente:* ' + datos.cliente + '%0A' +
             '📍 *Sector:* ' + datos.sector + '%0A' +
             '☕ *Tipo:* ' + datos.tipoMaquina + '%0A' +
-            '⚙️ *Modelo:* ' + datos.modelo + '%0A%0A' +
+            '⚙️ *Modelo:* ' + datos.modelo + '%0A' +
+            '💳 *Sistema de Pago:* ' + datos.sistPago + '%0A' +
+            '📝 *Observaciones:* ' + datos.obs + '%0A%0A' +
             '--- DATOS DEL CLIENTE ---' + '%0A' +
             '👤 *Nombre:* ' + datos.nombre + '%0A' +
             '✅ *Pago realizado:* ' + datos.pagado + '%0A' +
