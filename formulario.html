@@ -578,6 +578,33 @@
             animation: fadeInUp 0.4s ease;
         }
 
+        /* DEBUG INFO STYLES */
+        .debug-info {
+            background: #f0f0f0;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 0.85em;
+            display: none;
+        }
+
+        .debug-info.show {
+            display: block;
+        }
+
+        .debug-info h4 {
+            margin-bottom: 10px;
+            color: #4C1A1A;
+        }
+
+        .debug-info pre {
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+
         @media (max-width: 600px) {
             body {
                 padding: 0;
@@ -684,6 +711,12 @@
         <div class="form-content">
             <h2 class="form-title">Servicio de Atención al Cliente</h2>
             <p class="form-subtitle">Completa el formulario y te contactaremos a la brevedad</p>
+
+            <!-- DEBUG INFO (descomentar para ver diagnóstico) -->
+            <div id="debugInfo" class="debug-info">
+                <h4>🔍 Información de Debug</h4>
+                <pre id="debugContent"></pre>
+            </div>
 
             <div id="mensaje" class="mensaje"></div>
             <div id="loading" class="loading">
@@ -825,6 +858,7 @@
     <script>
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwe8-9RkG1rpT-R2qaOHGCEswwCOBqncOZ_Ta5WCeXNJuiWsNp_YjJmmz2oK6yOYeujxA/exec';
 const WHATSAPP_NUMBER = obtenerParametroURL('phone') || '3515631347';
+const DEBUG_MODE = false; // Cambiar a true para ver información de debug
 
 let maquinas = [];
 
@@ -839,6 +873,17 @@ function normalizar(texto) {
         .replace(/[\u0300-\u036f]/g, ''); // Eliminar acentos
 }
 
+// FUNCIÓN PARA MOSTRAR DEBUG INFO
+function mostrarDebug(info) {
+    if (!DEBUG_MODE) return;
+    
+    const debugDiv = document.getElementById('debugInfo');
+    const debugContent = document.getElementById('debugContent');
+    
+    debugDiv.classList.add('show');
+    debugContent.textContent = JSON.stringify(info, null, 2);
+}
+
 async function cargarMaquinas() {
     try {
         const response = await fetch(`${SCRIPT_URL}?accion=obtenerMaquinas`);
@@ -848,13 +893,31 @@ async function cargarMaquinas() {
             maquinas = data.maquinas;
             console.log('✅ Máquinas cargadas:', maquinas.length);
             console.log('📋 Datos de máquinas:', maquinas);
+            
+            mostrarDebug({
+                accion: 'cargarMaquinas',
+                exito: true,
+                totalMaquinas: maquinas.length,
+                maquinas: maquinas
+            });
+            
             return true;
         } else {
             console.error('❌ Error al cargar máquinas:', data.message);
+            mostrarDebug({
+                accion: 'cargarMaquinas',
+                exito: false,
+                error: data.message
+            });
             return false;
         }
     } catch (error) {
         console.error('❌ Error al obtener máquinas:', error);
+        mostrarDebug({
+            accion: 'cargarMaquinas',
+            exito: false,
+            error: error.toString()
+        });
         return false;
     }
 }
@@ -864,13 +927,58 @@ function obtenerParametroURL(nombre) {
     return urlParams.get(nombre);
 }
 
+// FUNCIÓN MEJORADA PARA BUSCAR MÁQUINA
+function buscarMaquina(nro, tipo) {
+    // Normalizar valores de búsqueda
+    const nroNormalizado = normalizar(nro);
+    const tipoNormalizado = normalizar(tipo);
+    
+    console.log('🔍 Buscando máquina con:', { nro, tipo });
+    console.log('🔍 Valores normalizados:', { nroNormalizado, tipoNormalizado });
+    
+    // Buscar con coincidencia EXACTA primero
+    let maquina = maquinas.find(m => {
+        const mNro = normalizar(m.nro);
+        const mTipo = normalizar(m.tipo);
+        
+        const nroMatch = mNro === nroNormalizado;
+        const tipoMatch = mTipo === tipoNormalizado;
+        
+        if (DEBUG_MODE) {
+            console.log(`Comparando: ${m.nro} (${m.tipo})`);
+            console.log(`  NRO: "${mNro}" === "${nroNormalizado}" = ${nroMatch}`);
+            console.log(`  TIPO: "${mTipo}" === "${tipoNormalizado}" = ${tipoMatch}`);
+        }
+        
+        return nroMatch && tipoMatch;
+    });
+    
+    // Si no se encontró con tipo, buscar solo por número
+    if (!maquina) {
+        console.log('⚠️ No se encontró con tipo, buscando solo por número...');
+        maquina = maquinas.find(m => {
+            const mNro = normalizar(m.nro);
+            return mNro === nroNormalizado;
+        });
+        
+        if (maquina) {
+            console.log('✅ Encontrada por número solamente:', maquina);
+        }
+    }
+    
+    return maquina;
+}
+
 // INICIALIZAR AL CARGAR LA PÁGINA
 window.addEventListener('DOMContentLoaded', async () => {
+    console.log('🚀 Iniciando carga de página...');
+    
     // 1. PRIMERO cargar las máquinas y ESPERAR a que termine
     const cargaExitosa = await cargarMaquinas();
     
     if (!cargaExitosa) {
         console.error('⚠️ No se pudieron cargar las máquinas');
+        mostrarMensaje('error', '⚠️ Error al cargar datos de máquinas. Por favor, recarga la página.');
         return;
     }
     
@@ -880,65 +988,92 @@ window.addEventListener('DOMContentLoaded', async () => {
     const sistPago = obtenerParametroURL('sistpago') || '';
     const obs = obtenerParametroURL('obs') || '';
     
-    console.log('🔍 Parámetros URL capturados:', {
+    const urlParams = {
         nro: nroMaquina,
         tipo: tipoMaquina,
         sistpago: sistPago,
         obs: obs
+    };
+    
+    console.log('🔍 Parámetros URL capturados:', urlParams);
+    mostrarDebug({
+        accion: 'parametrosURL',
+        parametros: urlParams
     });
     
     // 3. Si hay número de máquina, buscarla y rellenar los campos
     if (nroMaquina) {
+        // Guardar parámetros URL en campos hidden
         document.getElementById('nroMaquina').value = nroMaquina;
         document.getElementById('tipoMaquina').value = tipoMaquina;
         document.getElementById('sistPago').value = sistPago;
         document.getElementById('obs').value = obs;
         
-        // BÚSQUEDA MEJORADA: Normalizar valores para comparación más flexible
-        const nroNormalizado = normalizar(nroMaquina);
-        const tipoNormalizado = normalizar(tipoMaquina);
-        
-        console.log('🔍 Buscando con valores normalizados:', {
-            nro: nroNormalizado,
-            tipo: tipoNormalizado
-        });
-        
-        const maquina = maquinas.find(m => {
-            const mNro = normalizar(m.nro);
-            const mTipo = normalizar(m.tipo);
-            
-            const nroMatch = mNro === nroNormalizado;
-            const tipoMatch = mTipo === tipoNormalizado;
-            
-            console.log(`Comparando: ${m.nro} (${m.tipo}) con ${nroMaquina} (${tipoMaquina})`);
-            console.log(`  Normalizado: "${mNro}" === "${nroNormalizado}" = ${nroMatch}`);
-            console.log(`  Normalizado: "${mTipo}" === "${tipoNormalizado}" = ${tipoMatch}`);
-            
-            return nroMatch && tipoMatch;
-        });
+        // Buscar la máquina
+        const maquina = buscarMaquina(nroMaquina, tipoMaquina);
         
         if (maquina) {
             console.log('✅ Máquina encontrada:', maquina);
+            
+            // Rellenar campos con datos de la máquina encontrada
             document.getElementById('cliente').value = maquina.cliente || '';
             document.getElementById('sector').value = maquina.sector || '';
             document.getElementById('modelo').value = maquina.modelo || '';
             
-            console.log('📝 Campos rellenados:', {
-                cliente: maquina.cliente,
-                sector: maquina.sector,
-                modelo: maquina.modelo,
-                sistPago: sistPago,
-                obs: obs
+            // Si no hay sistPago en URL pero sí en máquina, usar el de máquina
+            if (!sistPago && maquina.sistPago) {
+                document.getElementById('sistPago').value = maquina.sistPago;
+            }
+            
+            // Si no hay obs en URL pero sí en máquina, usar el de máquina
+            if (!obs && maquina.obs) {
+                document.getElementById('obs').value = maquina.obs;
+            }
+            
+            const datosCargados = {
+                nroMaquina: nroMaquina,
+                tipoMaquina: tipoMaquina,
+                cliente: maquina.cliente || '',
+                sector: maquina.sector || '',
+                modelo: maquina.modelo || '',
+                sistPago: document.getElementById('sistPago').value,
+                obs: document.getElementById('obs').value
+            };
+            
+            console.log('📝 Campos rellenados:', datosCargados);
+            mostrarDebug({
+                accion: 'maquinaEncontrada',
+                maquina: maquina,
+                datosCargados: datosCargados
             });
+            
         } else {
             console.warn('⚠️ No se encontró la máquina con nro:', nroMaquina, 'tipo:', tipoMaquina);
             console.log('📋 Máquinas disponibles:');
             maquinas.forEach(m => {
-                console.log(`  - ${m.nro} | ${m.tipo} (Cliente: ${m.cliente}, Sector: ${m.sector})`);
+                console.log(`  - Nro: "${m.nro}" | Tipo: "${m.tipo}" | Cliente: "${m.cliente}" | Sector: "${m.sector}"`);
             });
+            
+            mostrarDebug({
+                accion: 'maquinaNoEncontrada',
+                busqueda: { nro: nroMaquina, tipo: tipoMaquina },
+                maquinasDisponibles: maquinas.map(m => ({
+                    nro: m.nro,
+                    tipo: m.tipo,
+                    cliente: m.cliente,
+                    sector: m.sector
+                }))
+            });
+            
+            // Mostrar advertencia al usuario
+            mostrarMensaje('error', '⚠️ No se encontraron todos los datos de esta máquina. Por favor, verifica la información.');
         }
     } else {
         console.log('ℹ️ No se proporcionó número de máquina en la URL');
+        mostrarDebug({
+            accion: 'sinParametros',
+            mensaje: 'No hay número de máquina en la URL'
+        });
     }
 
     // 4. Inicializar el selector personalizado de país
@@ -1030,6 +1165,10 @@ formulario.addEventListener('submit', async (e) => {
     };
 
     console.log('📤 Enviando datos:', datos);
+    mostrarDebug({
+        accion: 'enviarFormulario',
+        datos: datos
+    });
 
     formulario.style.display = 'none';
     loading.style.display = 'block';
@@ -1079,6 +1218,11 @@ formulario.addEventListener('submit', async (e) => {
         loading.style.display = 'none';
         formulario.style.display = 'block';
         btnEnviar.disabled = false;
+        
+        mostrarDebug({
+            accion: 'errorEnvio',
+            error: error.toString()
+        });
     }
 });
 
