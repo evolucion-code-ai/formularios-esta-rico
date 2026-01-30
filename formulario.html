@@ -828,6 +828,17 @@ const WHATSAPP_NUMBER = obtenerParametroURL('phone') || '3515631347';
 
 let maquinas = [];
 
+// FUNCIÓN PARA NORMALIZAR STRINGS (eliminar acentos, mayúsculas, espacios extra)
+function normalizar(texto) {
+    if (!texto) return '';
+    return texto
+        .toString()
+        .toLowerCase()
+        .trim()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, ''); // Eliminar acentos
+}
+
 async function cargarMaquinas() {
     try {
         const response = await fetch(`${SCRIPT_URL}?accion=obtenerMaquinas`);
@@ -883,13 +894,25 @@ window.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('sistPago').value = sistPago;
         document.getElementById('obs').value = obs;
         
-        // Buscar la máquina en el array cargado
-        // IMPORTANTE: Normalizar los valores para la comparación
+        // BÚSQUEDA MEJORADA: Normalizar valores para comparación más flexible
+        const nroNormalizado = normalizar(nroMaquina);
+        const tipoNormalizado = normalizar(tipoMaquina);
+        
+        console.log('🔍 Buscando con valores normalizados:', {
+            nro: nroNormalizado,
+            tipo: tipoNormalizado
+        });
+        
         const maquina = maquinas.find(m => {
-            const nroMatch = m.nro.toString().trim().toLowerCase() === nroMaquina.toString().trim().toLowerCase();
-            const tipoMatch = m.tipo.toString().trim().toLowerCase() === tipoMaquina.toString().trim().toLowerCase();
+            const mNro = normalizar(m.nro);
+            const mTipo = normalizar(m.tipo);
             
-            console.log(`Comparando: ${m.nro} (${m.tipo}) con ${nroMaquina} (${tipoMaquina}) - Nro: ${nroMatch}, Tipo: ${tipoMatch}`);
+            const nroMatch = mNro === nroNormalizado;
+            const tipoMatch = mTipo === tipoNormalizado;
+            
+            console.log(`Comparando: ${m.nro} (${m.tipo}) con ${nroMaquina} (${tipoMaquina})`);
+            console.log(`  Normalizado: "${mNro}" === "${nroNormalizado}" = ${nroMatch}`);
+            console.log(`  Normalizado: "${mTipo}" === "${tipoNormalizado}" = ${tipoMatch}`);
             
             return nroMatch && tipoMatch;
         });
@@ -909,7 +932,10 @@ window.addEventListener('DOMContentLoaded', async () => {
             });
         } else {
             console.warn('⚠️ No se encontró la máquina con nro:', nroMaquina, 'tipo:', tipoMaquina);
-            console.log('📋 Máquinas disponibles:', maquinas.map(m => `${m.nro} (${m.tipo})`));
+            console.log('📋 Máquinas disponibles:');
+            maquinas.forEach(m => {
+                console.log(`  - ${m.nro} | ${m.tipo} (Cliente: ${m.cliente}, Sector: ${m.sector})`);
+            });
         }
     } else {
         console.log('ℹ️ No se proporcionó número de máquina en la URL');
