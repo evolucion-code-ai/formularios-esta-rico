@@ -846,7 +846,8 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="comentarios">¿En qué podemos ayudarte?</label>
+                    <label for="comentarios">¿En qué podemos ayudarte hoy?</label>
+                    <p id="infoContexto" style="margin-top:10px; font-weight:500;"></p>     
                     <textarea id="comentarios" name="comentarios" placeholder="Agrega detalles adicionales sobre el problema..."></textarea>
                 </div>
 
@@ -862,6 +863,22 @@ const DEBUG_MODE = false; // Cambiar a true para ver información de debug
 
 let maquinas = [];
 
+document.addEventListener("DOMContentLoaded", function () {
+
+    // Tomar valores de los inputs hidden
+    const cliente = document.getElementById("cliente").value;
+    const sector = document.getElementById("sector").value;
+    const modelo = document.getElementById("modelo").value;
+
+    // Construir el texto
+    const mensaje = `Sabemos que estás en: ${cliente} - ${sector} - ${modelo}`;
+
+    // Mostrar debajo del label
+    document.getElementById("infoContexto").innerText = mensaje;
+
+});
+
+        
 // FUNCIÓN PARA NORMALIZAR STRINGS (eliminar acentos, mayúsculas, espacios extra)
 function normalizar(texto) {
     if (!texto) return '';
