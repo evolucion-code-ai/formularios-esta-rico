@@ -863,21 +863,18 @@ const DEBUG_MODE = false; // Cambiar a true para ver información de debug
 
 let maquinas = [];
 
-document.addEventListener("DOMContentLoaded", function () {
-
-    // Tomar valores de los inputs hidden
+function actualizarContexto() {
     const cliente = document.getElementById("cliente").value;
     const sector = document.getElementById("sector").value;
     const modelo = document.getElementById("modelo").value;
 
-    // Construir el texto
-    const mensaje = `Sabemos que estás en: ${cliente} - ${sector} - ${modelo}`;
-
-    // Mostrar debajo del label
-    document.getElementById("infoContexto").innerText = mensaje;
-
-});
-
+    if (cliente || sector || modelo) {
+        const mensaje = `Sabemos que estás en: ${cliente || '-'} - ${sector || '-'} - ${modelo || '-'}`;
+        document.getElementById("infoContexto").innerText = mensaje;
+    } else {
+        document.getElementById("infoContexto").innerText = '';
+    }
+}
         
 // FUNCIÓN PARA NORMALIZAR STRINGS (eliminar acentos, mayúsculas, espacios extra)
 function normalizar(texto) {
@@ -1036,6 +1033,8 @@ window.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('cliente').value = maquina.cliente || '';
             document.getElementById('sector').value = maquina.sector || '';
             document.getElementById('modelo').value = maquina.modelo || '';
+
+            actualizarContexto();
             
             // Si no hay sistPago en URL pero sí en máquina, usar el de máquina
             if (!sistPago && maquina.sistPago) {
