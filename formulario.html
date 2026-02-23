@@ -699,6 +699,19 @@
                 font-size: 1em;
             }
         }
+
+
+        .contexto-maquina {
+            margin-top: 10px;
+            font-weight: 600;
+            color: #4C1A1A; /* Borravino */
+            background: rgba(76, 26, 26, 0.08);
+            padding: 10px 14px;
+            border-radius: 10px;
+            border-left: 4px solid #4C1A1A;
+            font-size: 0.95em;
+            animation: fadeIn 0.4s ease;
+        }
         
     </style>
 </head>
@@ -846,8 +859,8 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="comentarios">¿En qué podemos ayudarte hoy?</label>
-                    <p id="infoContexto" style="margin-top:10px; font-weight:500;"></p>     
+                    <label for="comentarios">¿En qué podemos ayudarte?</label>
+                    <p id="infoContexto" class="contexto-maquina"></p>     
                     <textarea id="comentarios" name="comentarios" placeholder="Agrega detalles adicionales sobre el problema..."></textarea>
                 </div>
 
@@ -862,17 +875,21 @@ const WHATSAPP_NUMBER = obtenerParametroURL('phone') || '3515631347';
 const DEBUG_MODE = false; // Cambiar a true para ver información de debug
 
 let maquinas = [];
-
+        
+// Funcion para mostrar datos del lugar
 function actualizarContexto() {
     const cliente = document.getElementById("cliente").value;
     const sector = document.getElementById("sector").value;
     const modelo = document.getElementById("modelo").value;
 
+    const contenedor = document.getElementById("infoContexto");
+
     if (cliente || sector || modelo) {
-        const mensaje = `Sabemos que estás en: ${cliente || '-'} - ${sector || '-'} - ${modelo || '-'}`;
-        document.getElementById("infoContexto").innerText = mensaje;
+        contenedor.innerText = 
+            `Sabemos que estás en: ${cliente || '-'} - ${sector || '-'} - ${modelo || '-'}`;
+        contenedor.style.display = "block";
     } else {
-        document.getElementById("infoContexto").innerText = '';
+        contenedor.style.display = "none";
     }
 }
         
