@@ -886,7 +886,7 @@ function actualizarContexto() {
 
     if (cliente || sector || modelo) {
         contenedor.innerText = 
-            `Sabemos que estás en: ${cliente || '-'} - ${sector || '-'} - ${modelo || '-'}`;
+            `${cliente || '-'} - ${sector || '-'} - ${modelo || '-'}`;
         contenedor.style.display = "block";
     } else {
         contenedor.style.display = "none";
@@ -1225,7 +1225,6 @@ formulario.addEventListener('submit', async (e) => {
             '🔢 *Nro:* ' + datos.nroMaquina + '%0A' +
             '🏢 *Cliente:* ' + datos.cliente + '%0A' +
             '📍 *Sector:* ' + datos.sector + '%0A' +
-            '☕ *Tipo:* ' + datos.tipoMaquina + '%0A' +
             '⚙️ *Modelo:* ' + datos.modelo + '%0A' +
             '💳 *Sistema de Pago:* ' + datos.sistPago + '%0A' +
             '📝 *Observaciones:* ' + datos.obs + '%0A%0A' +
