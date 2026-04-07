@@ -781,11 +781,11 @@
                     <p id="infoContexto" class="contexto-maquina"></p>
                     
                     <label for="comentarios2">Comente brevemente el inconveniente:</label>
-                    <textarea 
-                      id="comentarios2" 
-                      name="comentarios2" 
-                      placeholder="Agrega detalles del problema:&#10;Producto, Procedimiento realizado o que observó en la Máquina">
-                    </textarea>
+<textarea 
+  id="comentarios" 
+  name="comentarios" 
+  placeholder="Agrega detalles del problema:&#10;Producto, Procedimiento realizado o que observó en la Máquina">
+</textarea>
                     <small>Incluí toda la información posible para agilizar la solución</small>
                 </div>
 
@@ -811,7 +811,7 @@ function actualizarContexto() {
 
     if (cliente || sector || modelo) {
         contenedor.innerText = 
-            `Ubicación: 📍 ${cliente || '-'} - ${sector || '-'} - ${modelo || '-'}`;
+            `📍 ${cliente || '-'} - ${sector || '-'} - ${modelo || '-'}`;
         contenedor.style.display = "block";
     } else {
         contenedor.style.display = "none";
