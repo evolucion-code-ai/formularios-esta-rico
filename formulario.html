@@ -176,6 +176,7 @@
                 <input type="hidden" id="modelo" name="modelo">
                 <input type="hidden" id="sistPago" name="sistPago">
                 <input type="hidden" id="obs" name="obs">
+                <input type="hidden" id="phone" name="phone">
 
                 <div class="form-group">
                     <label for="nombre">Ingresa tu Nombre <span class="required">*</span></label>
@@ -237,7 +238,8 @@
 
     <script>
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz-t96DOLHGyNgIYagbFkZUoRLHXDKDOYZsyD34VpCWWgHvTW6-Qii-ER49-I4pXFqOAw/exec';
-        const WHATSAPP_NUMBER = '3515631347';
+   //     const WHATSAPP_NUMBER = phone;
+        const cliente = document.getElementById('phone').value;
 
         let maquinas = [];
 
