@@ -701,6 +701,11 @@
         }
 
 
+
+        #canal {
+            font-size: 1.15em;
+            font-weight: 600;
+        }
         .contexto-maquina {
             margin-top: 10px;
             font-weight: 600;
@@ -773,6 +778,15 @@
                         <option value="Otro">➕ Otro</option>
                     </select>
                 </div>
+                <div class="form-group">
+                    <label for="productoSeleccionado">Producto seleccionado <span class="required">*</span></label>
+                    <input type="text" id="productoSeleccionado" name="productoSeleccionado" placeholder="Producto seleccionado" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="canal">Numero de Canal <span class="required">*</span></label>
+                    <input type="number" id="canal" name="canal" placeholder="Nro visible en la máquina" required>
+                </div>
 
                 <div class="form-group">
                     <label for="procedimiento">Procedimiento realizado <span class="required">*</span></label>
@@ -780,7 +794,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="comentarios">¿En qué podemos ayudarte?</label>
+                    <label for="comentarios"> Observaciones: ¿En qué podemos ayudarte?</label>
                     <p id="infoContexto" class="contexto-maquina"></p>     
                     <textarea id="comentarios" name="comentarios" placeholder="Agrega detalles adicionales sobre el problema..."></textarea>
                 </div>
@@ -1108,6 +1122,8 @@ formulario.addEventListener('submit', async (e) => {
         nombre: document.getElementById('nombre').value.trim(),
         pagado: document.getElementById('pagado').value,
         tipoPago: document.getElementById('tipoPago').value || '-',
+        productoSeleccionado: document.getElementById('productoSeleccionado').value.trim(),
+        canal: document.getElementById('canal').value,
         procedimiento: procedimiento,
         // Mantiene compatibilidad con el Apps Script actual.
         celular: procedimiento,
@@ -1149,6 +1165,8 @@ formulario.addEventListener('submit', async (e) => {
             '👤 *Nombre:* ' + datos.nombre + '%0A' +
             '✅ *Pago realizado:* ' + datos.pagado + '%0A' +
             '💳 *Tipo de Pago:* ' + datos.tipoPago + '%0A' +
+            '🛒 *Producto seleccionado:* ' + datos.productoSeleccionado + '%0A' +
+            '📣 *Canal:* ' + datos.canal + '%0A' +
             '*Procedimiento realizado:* ' + datos.procedimiento + '%0A' +
             '%0A--- COMENTARIOS ---' + '%0A' +
             (datos.comentarios || 'Sin comentarios adicionales');
@@ -1184,6 +1202,10 @@ function mostrarMensaje(tipo, texto) {
 </script>
 </body>
 </html>
+
+
+
+
 
 
 
