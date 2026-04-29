@@ -1152,26 +1152,30 @@ formulario.addEventListener('submit', async (e) => {
 
         console.log('✅ Respuesta enviada');
 
-        const mensajeWhatsApp = 
-            '🚨 *NUEVA ATENCIÓN REGISTRADA*' + '%0A%0A' +
-            '--- DATOS DE LA MÁQUINA ---' + '%0A' +
-            '🔢 *Nro:* ' + datos.nroMaquina + '%0A' +
-            '🏢 *Cliente:* ' + datos.cliente + '%0A' +
-            '📍 *Sector:* ' + datos.sector + '%0A' +
-            '⚙️ *Modelo:* ' + datos.modelo + '%0A' +
-            '💳 *Sistema de Pago:* ' + datos.sistPago + '%0A' +
-            '📝 *Observaciones:* ' + datos.obs + '%0A%0A' +
-            '--- DATOS DEL CLIENTE ---' + '%0A' +
-            '👤 *Nombre:* ' + datos.nombre + '%0A' +
-            '✅ *Pago realizado:* ' + datos.pagado + '%0A' +
-            '💳 *Tipo de Pago:* ' + datos.tipoPago + '%0A' +
-            '🛒 *Producto seleccionado:* ' + datos.productoSeleccionado + '%0A' +
-            '📣 *Canal:* ' + datos.canal + '%0A' +
-            '*Procedimiento realizado:* ' + datos.procedimiento + '%0A' +
-            '%0A--- COMENTARIOS ---' + '%0A' +
-            (datos.comentarios || 'Sin comentarios adicionales');
+        const mensajeWhatsApp = [
+            '🚨 *NUEVA ATENCIÓN REGISTRADA*',
+            '',
+            '--- DATOS DE LA MÁQUINA ---',
+            '🔢 *Nro:* ' + datos.nroMaquina,
+            '🏢 *Cliente:* ' + datos.cliente,
+            '📍 *Sector:* ' + datos.sector,
+            '⚙️ *Modelo:* ' + datos.modelo,
+            '💳 *Sistema de Pago:* ' + datos.sistPago,
+            '📝 *Observaciones:* ' + datos.obs,
+            '',
+            '--- DATOS DEL CLIENTE ---',
+            '👤 *Nombre:* ' + datos.nombre,
+            '✅ *Pago realizado:* ' + datos.pagado,
+            '💳 *Tipo de Pago:* ' + datos.tipoPago,
+            '🛒 *Producto seleccionado:* ' + datos.productoSeleccionado,
+            '🔢 *Número de canal:* ' + datos.canal,
+            '🔧 *Procedimiento realizado:* ' + datos.procedimiento,
+            '',
+            '--- COMENTARIOS ---',
+            datos.comentarios || 'Sin comentarios adicionales'
+        ].join('\n');
 
-        const urlWhatsApp = `https://wa.me/${WHATSAPP_NUMBER}?text=${mensajeWhatsApp}`;
+        const urlWhatsApp = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(mensajeWhatsApp)}`;
 
         mostrarMensaje('exito', '✅ ¡Gracias! Redirigiendo a WhatsApp...');
 
@@ -1202,6 +1206,7 @@ function mostrarMensaje(tipo, texto) {
 </script>
 </body>
 </html>
+
 
 
 
